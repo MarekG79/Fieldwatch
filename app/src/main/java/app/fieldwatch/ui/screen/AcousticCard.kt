@@ -87,7 +87,7 @@ internal fun AcousticCard() {
     SectionCard(LanguageText.text("acoustic.title")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(LanguageText.text("acoustic.listen"), Modifier.weight(1f))
-            FieldwatchSwitch(wanted) { on ->
+            FieldwatchSwitch(wanted, onCheckedChange = { on ->
                 if (!on) {
                     wanted = false
                 } else if (listener.hasPermission()) {
@@ -95,7 +95,7 @@ internal fun AcousticCard() {
                 } else {
                     permission.launch(Manifest.permission.RECORD_AUDIO)
                 }
-            }
+            })
         }
         if (!wanted) {
             Note(LanguageText.text("acoustic.note"))

@@ -25,7 +25,8 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "app.fieldwatch"
+        // Own id so the fork installs beside the original Fieldwatch, signed with your own key.
+        applicationId = "sk.antidron.app"
         minSdk = 29
         targetSdk = 35
         versionCode = 54

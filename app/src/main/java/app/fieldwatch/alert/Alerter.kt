@@ -234,6 +234,46 @@ class Alerter(private val context: Context) {
     }
 
     /**
+     * Drone geofence. Own channel so it can be muted without muting the watchlist.
+     * [body] has no coordinates. Vibrates every time: a drone overhead is worth a buzz.
+     */
+    fun fenceAlert(title: String, body: String, phrase: String?, beep: Boolean, shade: Boolean) {
+        if (shade) {
+            ensureFenceChannel()
+            val pending = PendingIntent.getActivity(
+                context,
+                FENCE_NOTE_ID,
+                Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            val note = NotificationCompat.Builder(context, FENCE_CHANNEL)
+                .setSmallIcon(R.drawable.ic_stat_fieldwatch)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setAutoCancel(true)
+                .setSilent(true)
+                .setContentIntent(pending)
+                .build()
+            manager.notify(FENCE_NOTE_ID, note)
+        }
+        vibrate()
+        if (beep) beep(holdFocus = phrase.isNullOrBlank())
+        if (!phrase.isNullOrBlank()) {
+            prepareVoice()
+            queueVoice(phrase, afterBeep = beep)
+        }
+    }
+
+    fun clearFenceNote() {
+        manager.cancel(FENCE_NOTE_ID)
+    }
+
+    /**
      * Tracker monitoring. Low and silent. [text] has no coordinates and no owner claim.
      * The tap opens that radio.
      */
@@ -737,6 +777,18 @@ class Alerter(private val context: Context) {
         )
     }
 
+    private fun ensureFenceChannel() {
+        if (Build.VERSION.SDK_INT < 26) return
+        if (manager.getNotificationChannel(FENCE_CHANNEL) != null) return
+        manager.createNotificationChannel(
+            NotificationChannel(FENCE_CHANNEL, LanguageText.text("settings.topic.dronefence"), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = LanguageText.text("dronefence.note")
+                enableVibration(true)
+                setSound(null, null)
+            },
+        )
+    }
+
     private fun ensureCellChannel() {
         if (Build.VERSION.SDK_INT < 26) return
         if (manager.getNotificationChannel(CELL_CHANNEL) != null) return
@@ -798,11 +850,13 @@ class Alerter(private val context: Context) {
         const val FLOCK_CHANNEL = "fieldwatch_map_layers"
         const val TRUSTED_CHANNEL = "fieldwatch_trusted"
         const val CELL_CHANNEL = "fieldwatch_cell"
+        const val FENCE_CHANNEL = "fieldwatch_dronefence"
         const val TRACKER_CHANNEL = "fieldwatch_tracker"
         private const val GNSS_NOTE_ID = 71_001
         private const val TRUSTED_NOTE_ID = 71_002
         private const val CELL_NOTE_ID = 71_003
         private const val TRACKER_NOTE_ID = 71_004
+        private const val FENCE_NOTE_ID = 71_005
         private const val FLOCK_NOTE_ID = 72_010
         const val EXTRA_DEVICE_KEY = "device_key"
         private const val FREQ_HZ = 1050.0

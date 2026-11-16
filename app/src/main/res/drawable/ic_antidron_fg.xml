@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Antidron launcher foreground: shield with a quadcopter seen from above. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#3DFF9A"
+        android:fillAlpha="0.14"
+        android:strokeColor="#3DFF9A"
+        android:strokeWidth="3"
+        android:strokeLineJoin="round"
+        android:pathData="M54,27 L77,35.5 L77,53 C77,67.5 67.5,77.5 54,83 C40.5,77.5 31,67.5 31,53 L31,35.5 Z" />
+    <path
+        android:strokeColor="#E8F5EE"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M46.5,47.5 L61.5,62.5 M61.5,47.5 L46.5,62.5" />
+    <path
+        android:strokeColor="#E8F5EE"
+        android:strokeWidth="2"
+        android:pathData="M41.3,47.5 a5.2,5.2 0 1,0 10.4,0 a5.2,5.2 0 1,0 -10.4,0 M56.3,47.5 a5.2,5.2 0 1,0 10.4,0 a5.2,5.2 0 1,0 -10.4,0 M41.3,62.5 a5.2,5.2 0 1,0 10.4,0 a5.2,5.2 0 1,0 -10.4,0 M56.3,62.5 a5.2,5.2 0 1,0 10.4,0 a5.2,5.2 0 1,0 -10.4,0" />
+    <path
+        android:fillColor="#E8F5EE"
+        android:pathData="M45.1,47.5 a1.4,1.4 0 1,0 2.8,0 a1.4,1.4 0 1,0 -2.8,0 M60.1,47.5 a1.4,1.4 0 1,0 2.8,0 a1.4,1.4 0 1,0 -2.8,0 M45.1,62.5 a1.4,1.4 0 1,0 2.8,0 a1.4,1.4 0 1,0 -2.8,0 M60.1,62.5 a1.4,1.4 0 1,0 2.8,0 a1.4,1.4 0 1,0 -2.8,0" />
+    <path
+        android:fillColor="#FFB020"
+        android:pathData="M50.5,51.5 h7 a2,2 0 0 1 2,2 v3 a2,2 0 0 1 -2,2 h-7 a2,2 0 0 1 -2,-2 v-3 a2,2 0 0 1 2,-2 Z" />
+</vector>

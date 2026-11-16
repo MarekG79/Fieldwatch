@@ -45,6 +45,9 @@ jobs:
     name: APK
     runs-on: ubuntu-latest
     needs: test
+    # contents: write lets the job publish a GitHub Release with the APK.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -126,6 +129,29 @@ jobs:
           name: antidron-apk
           path: out/*.apk
           if-no-files-found: error
+
+      # Every signed build of main becomes a Release, so the APK is one tap away on
+      # the Releases page. Pull-request builds stay as workflow artifacts only.
+      - name: Publish release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.signing.outputs.signed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="antidron-${GITHUB_RUN_NUMBER}"
+          {
+            echo "Podpísané APK aplikácie Antidron, build ${GITHUB_RUN_NUMBER}."
+            echo
+            echo "Inštalácia: stiahni súbor .apk nižšie a otvor ho v telefóne. Nainštaluje sa cez predchádzajúcu verziu a zachová dáta."
+            echo
+            echo "Zmeny od predchádzajúceho buildu:"
+            git log -1 --pretty='- %s'
+          } > notes.md
+          gh release create "$TAG" out/*.apk \
+            --target "$GITHUB_SHA" \
+            --title "Antidron ${GITHUB_RUN_NUMBER}" \
+            --notes-file notes.md \
+            --latest
 
       - name: Remove signing files
         if: always()

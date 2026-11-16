@@ -1953,6 +1953,26 @@
     "acoustic.alert": "Drone sound nearby",
     "acoustic.alert.body": "Propeller hum at about {hz} Hz. The position is not known.",
     "simple.heard": "Likely a drone (sound)",
-    "simple.heard.note": "Propeller hum at about {hz} Hz. The position is not known."
+    "simple.heard.note": "Propeller hum at about {hz} Hz. The position is not known.",
+    "acoustic.background": "Listen with the screen off",
+    "acoustic.background.note": "Keeps listening with the screen off while scanning runs. Android shows that the microphone is in use. Swiping the app away stops it.",
+    "acoustic.background.on": "Listening with the screen off.",
+    "acoustic.background.needs.scan": "Screen-off listening needs scanning on. Start it on this screen.",
+    "alarm.dismiss": "I see it",
+    "alarm.open": "Open the app",
+    "dronefence.fullscreen": "Full-screen alarm",
+    "dronefence.fullscreen.note": "A red alarm that fills the screen, also over the lock screen.",
+    "dronefence.fullscreen.denied": "Android does not yet allow full-screen alarms for this app.",
+    "dronefence.fullscreen.allow": "Allow",
+    "nan.title": "Remote ID over Wi-Fi NAN",
+    "nan.note": "Some drones send Remote ID over Wi-Fi Aware (NAN). Only phones with Wi-Fi Aware can hear it.",
+    "nan.status": "Wi-Fi NAN: {state}",
+    "nan.state.running": "listening",
+    "nan.state.unsupported": "this phone has no Wi-Fi Aware",
+    "nan.state.unavailable": "paused (Wi-Fi off, hotspot or Wi-Fi Direct)",
+    "nan.state.failed": "could not start",
+    "nan.state.starting": "starting",
+    "nan.state.off": "switched off",
+    "nan.state.waiting": "starts with scanning"
   }
 }

@@ -1,6 +1,7 @@
 package app.fieldwatch.ui.screen
 
 import android.Manifest
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
@@ -37,6 +38,9 @@ import app.fieldwatch.FieldwatchApp
 import app.fieldwatch.audio.AcousticListener
 import app.fieldwatch.domain.AcousticDrone
 import app.fieldwatch.domain.LanguageText
+import app.fieldwatch.radio.ScanService
+import app.fieldwatch.ui.FieldwatchUi
+import app.fieldwatch.ui.FieldwatchViewModel
 import app.fieldwatch.ui.component.FieldwatchSwitch
 import app.fieldwatch.ui.component.SectionCard
 import app.fieldwatch.ui.theme.Amber
@@ -48,39 +52,53 @@ import kotlin.math.roundToInt
  * and this screen is in front; stops it otherwise.
  */
 @Composable
-internal fun AcousticCard() {
-    val app = LocalContext.current.applicationContext as FieldwatchApp
+internal fun AcousticCard(state: FieldwatchUi, vm: FieldwatchViewModel) {
+    val context = LocalContext.current
+    val app = context.applicationContext as FieldwatchApp
     val listener = app.acoustic
     val st by listener.state.collectAsStateWithLifecycle()
-    var wanted by rememberSaveable { mutableStateOf(false) }
+    val wanted by listener.wantedFlow.collectAsStateWithLifecycle()
+    val inBackground by listener.backgroundActive.collectAsStateWithLifecycle()
+    val background = state.settings.acousticBackground
     var saveNote by rememberSaveable { mutableStateOf<String?>(null) }
-    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        wanted = granted
+
+    // Ask the scan service to add or drop the microphone type. Only while we are in front.
+    fun refreshService() {
+        if (!state.scanning) return
+        runCatching {
+            context.startService(Intent(context, ScanService::class.java).setAction(ScanService.ACTION_MIC))
+        }
     }
 
-    // Run only while wanted and the screen is started; Android gives background apps silence.
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        listener.setWanted(granted)
+        if (granted) refreshService()
+    }
+
+    // The screen being in front lets the detector listen; leaving it stops unless the
+    // scan service holds the microphone foreground type.
     val owner = LocalLifecycleOwner.current
-    DisposableEffect(owner, wanted) {
+    DisposableEffect(owner) {
         val obs = LifecycleEventObserver { _, e ->
             when (e) {
-                Lifecycle.Event.ON_START -> if (wanted) listener.start()
-                Lifecycle.Event.ON_STOP -> listener.stop()
+                Lifecycle.Event.ON_START -> listener.setScreenStarted(true)
+                Lifecycle.Event.ON_STOP -> listener.setScreenStarted(false)
                 else -> Unit
             }
         }
         owner.lifecycle.addObserver(obs)
-        if (wanted && owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) listener.start()
-        if (!wanted) listener.stop()
+        listener.setScreenStarted(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
         onDispose {
             owner.lifecycle.removeObserver(obs)
-            listener.stop()
+            listener.setScreenStarted(false)
         }
     }
-    // Keep the display on while listening, like the hunt screen does.
+    // Foreground-only listening keeps the display on; background listening does not need to.
     val view = LocalView.current
-    DisposableEffect(wanted) {
+    val keepOn = wanted && !inBackground
+    DisposableEffect(keepOn) {
         val prev = view.keepScreenOn
-        if (wanted) view.keepScreenOn = true
+        if (keepOn) view.keepScreenOn = true
         onDispose { view.keepScreenOn = prev }
     }
 
@@ -89,18 +107,33 @@ internal fun AcousticCard() {
             Text(LanguageText.text("acoustic.listen"), Modifier.weight(1f))
             FieldwatchSwitch(wanted, onCheckedChange = { on ->
                 if (!on) {
-                    wanted = false
+                    listener.setWanted(false)
+                    refreshService()
                 } else if (listener.hasPermission()) {
-                    wanted = true
+                    listener.setWanted(true)
+                    refreshService()
                 } else {
                     permission.launch(Manifest.permission.RECORD_AUDIO)
                 }
             })
         }
-        if (!wanted) {
-            Note(LanguageText.text("acoustic.note"))
-            Note(LanguageText.text("acoustic.foreground"))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(LanguageText.text("acoustic.background"), Modifier.weight(1f))
+            FieldwatchSwitch(background, onCheckedChange = { on ->
+                vm.updateSettings { it.copy(acousticBackground = on) }
+                // The new setting is read by the service; give the store a moment.
+                view.postDelayed({ refreshService() }, 300L)
+            })
         }
+        Note(
+            when {
+                background && !state.scanning -> LanguageText.text("acoustic.background.needs.scan")
+                background && wanted && inBackground -> LanguageText.text("acoustic.background.on")
+                background -> LanguageText.text("acoustic.background.note")
+                else -> LanguageText.text("acoustic.foreground")
+            },
+        )
+        if (!wanted) Note(LanguageText.text("acoustic.note"))
         st.errorKey?.let { key ->
             Text(LanguageText.text(key), color = SignalRed, style = MaterialTheme.typography.bodyMedium)
         }

@@ -62,6 +62,10 @@ internal fun DroneFenceSettings(vm: FieldwatchViewModel, settings: AppSettings) 
         FenceSwitchRow(LanguageText.text("dronefence.shade"), settings.droneFenceShade) { on ->
             vm.updateSettings { it.copy(droneFenceShade = on) }
         }
+        FullScreenAlarmRow(vm, settings)
+    }
+    SectionCard(LanguageText.text("nan.title"), showTitle = false) {
+        NanRow(vm, settings)
     }
 }
 

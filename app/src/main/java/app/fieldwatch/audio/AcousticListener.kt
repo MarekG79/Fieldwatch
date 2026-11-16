@@ -52,6 +52,43 @@ class AcousticListener(private val app: FieldwatchApp) {
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
+    /** The user's switch. Lives as long as the process; the screen and the service read it. */
+    private val _wanted = MutableStateFlow(false)
+    val wantedFlow: StateFlow<Boolean> = _wanted.asStateFlow()
+    val wanted: Boolean get() = _wanted.value
+
+    @Volatile private var screenStarted = false
+    @Volatile private var serviceMic = false
+
+    /** True while the scan service holds the microphone foreground type. */
+    private val _background = MutableStateFlow(false)
+    val backgroundActive: StateFlow<Boolean> = _background.asStateFlow()
+
+    fun setWanted(on: Boolean) {
+        _wanted.value = on
+        reconcile()
+    }
+
+    /** The simple screen is started (in front) or stopped. */
+    fun setScreenStarted(on: Boolean) {
+        screenStarted = on
+        reconcile()
+    }
+
+    /** Called by ScanService after it adds or drops the microphone foreground type. */
+    fun setServiceMic(on: Boolean) {
+        serviceMic = on
+        _background.value = on
+        reconcile()
+    }
+
+    /** Listen when wanted and either the screen is in front or the service may use the microphone. */
+    @Synchronized
+    fun reconcile() {
+        val run = wanted && hasPermission() && (screenStarted || serviceMic)
+        if (run) start() else if (running) stop()
+    }
+
     @Volatile private var worker: Thread? = null
     @Volatile private var running = false
     private val ringLock = Any()
@@ -197,6 +234,8 @@ class AcousticListener(private val app: FieldwatchApp) {
                 phrase = if (settings.droneFenceVoice) LanguageText.text("acoustic.alert") else null,
                 beep = settings.droneFenceBeep,
                 shade = settings.droneFenceShade,
+                fullScreen = settings.droneFenceFullScreen,
+                sound = true,
             )
         }
     }

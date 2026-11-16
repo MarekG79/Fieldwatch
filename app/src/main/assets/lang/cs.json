@@ -1935,6 +1935,24 @@
     "simple.dir.4": "J",
     "simple.dir.5": "JZ",
     "simple.dir.6": "Z",
-    "simple.dir.7": "SZ"
+    "simple.dir.7": "SZ",
+    "acoustic.title": "Zvuk vrtulí",
+    "acoustic.listen": "Poslouchat mikrofonem",
+    "acoustic.note": "Slyší bzučení vrtulí, i u dronů bez Remote ID. Dosah je obvykle 50 až 150 m v tichu, při větru nebo provozu méně. Sekačky, motory a ventilátory mohou znít podobně.",
+    "acoustic.foreground": "Poslouchá jen při otevřené obrazovce. Displej zůstane zapnutý.",
+    "acoustic.listening": "Poslouchám…",
+    "acoustic.quiet": "Žádný zvuk vrtulí",
+    "acoustic.maybe": "Něco bzučí na {hz} Hz",
+    "acoustic.heard": "Pravděpodobně dron · {hz} Hz",
+    "acoustic.level": "Hlasitost {db} dB",
+    "acoustic.save": "Uložit posledních 10 s",
+    "acoustic.saved": "Uloženo do Stažené/Antidron: {name}",
+    "acoustic.save.failed": "Nahrávku se nepodařilo uložit.",
+    "acoustic.error.permission": "Povolte mikrofon, aby aplikace mohla poslouchat drony.",
+    "acoustic.error.mic": "Mikrofon je obsazený nebo nedostupný.",
+    "acoustic.alert": "Zvuk dronu v okolí",
+    "acoustic.alert.body": "Bzučení vrtulí kolem {hz} Hz. Poloha není známa.",
+    "simple.heard": "Pravděpodobně dron (zvuk)",
+    "simple.heard.note": "Bzučení vrtulí kolem {hz} Hz. Poloha není známa."
   }
 }

@@ -31,6 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Warning
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fieldwatch.domain.DroneFence
 import app.fieldwatch.domain.DroneWatch
 import app.fieldwatch.domain.Geo
@@ -66,6 +68,7 @@ import app.fieldwatch.ui.theme.Amber
 import app.fieldwatch.ui.theme.Phosphor
 import app.fieldwatch.ui.theme.SignalRed
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 /**
  * Antidron simple mode: one screen, one answer — is there a drone near me?
@@ -91,6 +94,9 @@ internal fun SimpleScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
     )
     val radius = settings.droneFenceM
     val level = DroneWatch.level(drones, radius, settings.droneFencePilot)
+    val acoustic by (LocalContext.current.applicationContext as app.fieldwatch.FieldwatchApp)
+        .acoustic.state.collectAsStateWithLifecycle()
+    val heardHz = if (acoustic.listening && acoustic.verdict.drone) acoustic.verdict.f0 else null
     val scroll = rememberScrollState()
 
     Column(
@@ -104,7 +110,7 @@ internal fun SimpleScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
     ) {
         Header(state.scanning, onStart = vm::startScan)
         if (!state.locationOn) LocationHint()
-        StatusCard(level, drones.firstOrNull(), radius)
+        StatusCard(level, drones.firstOrNull(), radius, heardHz)
         if (drones.isNotEmpty()) {
             Text(
                 LanguageText.text("simple.drones"),
@@ -113,6 +119,7 @@ internal fun SimpleScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             )
             drones.forEach { DroneRow(it, radius, now) }
         }
+        AcousticCard()
         ZoneCard(
             on = settings.droneFence,
             radius = radius,
@@ -225,14 +232,19 @@ private fun LocationHint() {
 }
 
 @Composable
-private fun StatusCard(level: DroneWatch.Level, nearest: DroneWatch.Drone?, radius: Int) {
-    val (color, icon, titleKey) = when (level) {
-        DroneWatch.Level.CLEAR -> Triple(Phosphor, Icons.Outlined.CheckCircle, "simple.clear")
-        DroneWatch.Level.NEARBY -> Triple(Amber, Icons.Outlined.Flight, "simple.nearby")
-        DroneWatch.Level.ALERT -> Triple(SignalRed, Icons.Outlined.Warning, "simple.alert")
+private fun StatusCard(level: DroneWatch.Level, nearest: DroneWatch.Drone?, radius: Int, heardHz: Double?) {
+    // Sound alone never outranks a drone in the zone; it lifts "clear" to amber.
+    val heardOnly = level == DroneWatch.Level.CLEAR && heardHz != null
+    val (color, icon, titleKey) = when {
+        heardOnly -> Triple(Amber, Icons.Outlined.GraphicEq, "simple.heard")
+        level == DroneWatch.Level.CLEAR -> Triple(Phosphor, Icons.Outlined.CheckCircle, "simple.clear")
+        level == DroneWatch.Level.NEARBY -> Triple(Amber, Icons.Outlined.Flight, "simple.nearby")
+        else -> Triple(SignalRed, Icons.Outlined.Warning, "simple.alert")
     }
     val zone = Geo.distanceText(radius.toDouble())
-    val note = when (level) {
+    val note = if (heardOnly) {
+        LanguageText.text("simple.heard.note", mapOf("hz" to heardHz!!.roundToInt().toString()))
+    } else when (level) {
         DroneWatch.Level.CLEAR -> LanguageText.text("simple.clear.note")
         DroneWatch.Level.NEARBY -> if (nearest?.distanceM == null) {
             LanguageText.text("simple.nearby.nopos")

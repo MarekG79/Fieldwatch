@@ -1935,6 +1935,24 @@
     "simple.dir.4": "S",
     "simple.dir.5": "SW",
     "simple.dir.6": "W",
-    "simple.dir.7": "NW"
+    "simple.dir.7": "NW",
+    "acoustic.title": "Propeller sound",
+    "acoustic.listen": "Listen with the microphone",
+    "acoustic.note": "Hears the hum of drone propellers, also drones without Remote ID. Range is usually 50 to 150 m in quiet places, less in wind or traffic. Mowers, engines and fans can sound alike.",
+    "acoustic.foreground": "Listens only while this screen is open. The screen stays on.",
+    "acoustic.listening": "Listening…",
+    "acoustic.quiet": "No propeller sound",
+    "acoustic.maybe": "Something hums at {hz} Hz",
+    "acoustic.heard": "Likely a drone · {hz} Hz",
+    "acoustic.level": "Sound level {db} dB",
+    "acoustic.save": "Save last 10 s",
+    "acoustic.saved": "Saved to Downloads/Antidron: {name}",
+    "acoustic.save.failed": "Could not save the recording.",
+    "acoustic.error.permission": "Allow the microphone to listen for drones.",
+    "acoustic.error.mic": "The microphone is busy or not available.",
+    "acoustic.alert": "Drone sound nearby",
+    "acoustic.alert.body": "Propeller hum at about {hz} Hz. The position is not known.",
+    "simple.heard": "Likely a drone (sound)",
+    "simple.heard.note": "Propeller hum at about {hz} Hz. The position is not known."
   }
 }

@@ -1,0 +1,40 @@
+package app.fieldwatch.domain
+
+/** English lines for the simple drone screen. Slovak and Czech are in assets/lang. */
+internal object SimpleLines {
+    val all: List<EnglishLine> = listOf(
+        en("simple.title", "Drone watch", LanguageSlot.CONTROL),
+        en("simple.watching", "Watching the area", LanguageSlot.CONTROL),
+        en("simple.stopped", "Scanning is off", LanguageSlot.CONTROL),
+        en("simple.start", "Start", LanguageSlot.CONTROL),
+        en("simple.location.off", "Turn on location so the phone can scan for drones.", LanguageSlot.BODY),
+        en("simple.clear", "No drone nearby", LanguageSlot.CONTROL),
+        en("simple.clear.note", "No drone is sending its identity near you right now.", LanguageSlot.BODY),
+        en("simple.nearby", "Drone in the area", LanguageSlot.CONTROL),
+        en("simple.nearby.note", "Outside your zone of {m}.", LanguageSlot.BODY),
+        en("simple.nearby.nopos", "It does not send its position.", LanguageSlot.BODY),
+        en("simple.alert", "Drone in your zone", LanguageSlot.CONTROL),
+        en("simple.alert.note", "{d} · {dir} · zone {m}", LanguageSlot.BODY),
+        en("simple.drone.where", "{d} · {dir}", LanguageSlot.CONTROL),
+        en("simple.drone.nowhere", "Position not sent", LanguageSlot.CONTROL),
+        en("simple.drone.height", "{h} above the pilot", LanguageSlot.CONTROL),
+        en("simple.drone.pilot", "Pilot {d} · {dir}", LanguageSlot.CONTROL),
+        en("simple.drone.seen", "Heard {s} s ago", LanguageSlot.CONTROL),
+        en("simple.drone.rid", "Remote ID", LanguageSlot.CONTROL),
+        en("simple.drone.radio", "Recognized by its radio", LanguageSlot.CONTROL),
+        en("simple.drones", "Drones", LanguageSlot.CONTROL),
+        en("simple.zone", "Zone and alarm", LanguageSlot.CONTROL),
+        en("simple.limits", "Sees drones that send Remote ID, and some drones by their Wi-Fi or Bluetooth. Most FPV and home-made drones are not seen.", LanguageSlot.BODY),
+        en("simple.advanced", "Technical mode", LanguageSlot.CONTROL),
+        en("simple.mode", "Simple mode", LanguageSlot.CONTROL),
+        en("simple.mode.note", "One screen that shows only drones near you.", LanguageSlot.BODY),
+        en("simple.dir.0", "N", LanguageSlot.CONTROL),
+        en("simple.dir.1", "NE", LanguageSlot.CONTROL),
+        en("simple.dir.2", "E", LanguageSlot.CONTROL),
+        en("simple.dir.3", "SE", LanguageSlot.CONTROL),
+        en("simple.dir.4", "S", LanguageSlot.CONTROL),
+        en("simple.dir.5", "SW", LanguageSlot.CONTROL),
+        en("simple.dir.6", "W", LanguageSlot.CONTROL),
+        en("simple.dir.7", "NW", LanguageSlot.CONTROL),
+    )
+}

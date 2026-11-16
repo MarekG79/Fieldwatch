@@ -110,6 +110,8 @@ class FieldwatchApp : Application() {
         private set
     private val cellVoiceLock = Any()
     private val cellVoiced = HashSet<Long>()
+    /** Antidron: microphone drone detector, started by the simple screen. */
+    val acoustic: app.fieldwatch.audio.AcousticListener by lazy { app.fieldwatch.audio.AcousticListener(this) }
     lateinit var alerter: Alerter
         private set
     val flockIndex = FlockIndex()

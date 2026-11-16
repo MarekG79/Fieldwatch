@@ -964,6 +964,10 @@ fun SettingsScreen(
                 TrustedNetworksPage(vm, settings)
             }
 
+            if (topic == SettingsTopic.DRONE_FENCE) {
+                DroneFenceSettings(vm, settings)
+            }
+
             if (topic == SettingsTopic.TRACKER) {
                 SectionCard(LanguageText.text("settings.topic.tracker"), showTitle = false) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1431,6 +1435,7 @@ private enum class SettingsTopic(val titleKey: String) {
     CELL("settings.topic.cell"),
     TRUSTED("settings.topic.trusted"),
     TRACKER("settings.topic.tracker"),
+    DRONE_FENCE("settings.topic.dronefence"),
     TAK("settings.topic.tak"),
     LOGGING("settings.topic.logging"),
     SIGNATURES("settings.topic.signatures"),
@@ -1484,6 +1489,7 @@ private fun SettingsTopicList(
         } else {
             LanguageText.text("ui.off.label")
         },
+        SettingsTopic.DRONE_FENCE to droneFenceSummary(settings),
         SettingsTopic.TAK to when {
             settings.takEnabled && settings.demoMode -> LanguageText.text("ui.paused.label")
             settings.takEnabled -> "On · ${TakInstall.callsign(settings.takCallsign, takInstallTag)}"

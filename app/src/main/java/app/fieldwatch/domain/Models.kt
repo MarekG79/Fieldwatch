@@ -1566,6 +1566,18 @@ data class AppSettings(
     val trackerFollow: Boolean = false,
     /** Popup when a finder reaches two stops. Off until chosen. The place list stays. */
     val trackerPlaces: Boolean = false,
+    /** Drone geofence: alarm when a Remote ID aircraft comes within [droneFenceM]. Off until chosen. */
+    val droneFence: Boolean = false,
+    /** Geofence radius in meters. Missing JSON is 300. */
+    val droneFenceM: Int = 300,
+    /** Also alarm for the pilot or takeoff position the drone sends. */
+    val droneFencePilot: Boolean = true,
+    /** Beep for a geofence alarm. Not the watchlist beep. */
+    val droneFenceBeep: Boolean = true,
+    /** Speak a geofence alarm. Not the watchlist voice. */
+    val droneFenceVoice: Boolean = true,
+    /** System notification for a geofence alarm. On, so the alarm reaches a phone in a pocket. */
+    val droneFenceShade: Boolean = true,
 )
 
 const val DISCLAIMER_REV = 3

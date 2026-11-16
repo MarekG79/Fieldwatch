@@ -21,6 +21,8 @@ import androidx.lifecycle.lifecycleScope
 import app.fieldwatch.MainActivity
 import app.fieldwatch.R
 import app.fieldwatch.FieldwatchApp
+import app.fieldwatch.domain.DroneFence
+import app.fieldwatch.domain.Geo
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.Observation
 import app.fieldwatch.domain.RadioDb
@@ -59,6 +61,7 @@ class ScanService : LifecycleService() {
     private var lastIntensity: ScanIntensity? = null
     private var lastNotifAt = 0L
     private val inbound = Channel<Observation>(512, BufferOverflow.DROP_OLDEST)
+    private val fence = DroneFence()
     private val publishGate = Any()
     private var publishJob: Job? = null
     @Volatile private var lastPublishAt = 0L
@@ -315,6 +318,7 @@ class ScanService : LifecycleService() {
                     )
                 }
                 considerTrackers(app, seen, tagged)
+                considerFence(app, seen)
                 if (settings.loggingEnabled) {
                     val toLog = seen.filter { it.hitCount <= 1 || it.hitCount % 25 == 0 }.take(16)
                     for (row in toLog) {
@@ -377,6 +381,55 @@ class ScanService : LifecycleService() {
         if (raised != null || (before != null && after?.id != before)) {
             app.syncTrackerShade(after)
         }
+    }
+
+    /**
+     * Drone geofence. Needs GPS tagging for this phone's own fix. Only rows that carry
+     * a Remote ID aircraft or pilot position can raise it.
+     */
+    private fun considerFence(app: FieldwatchApp, seen: List<Sighting>) {
+        val settings = app.config.settings
+        if (!settings.droneFence || !settings.tagLocation) {
+            if (fence.insideCount() > 0) fence.reset()
+            return
+        }
+        val now = System.currentTimeMillis()
+        val fix = app.currentFix(now)
+        val radius = settings.droneFenceM.coerceIn(50, 5_000)
+        val hits = fence.hear(
+            rows = seen,
+            phoneLat = fix?.first,
+            phoneLon = fix?.second,
+            radiusM = radius,
+            watchPilot = settings.droneFencePilot,
+            now = now,
+        )
+        val hit = hits.minByOrNull { it.distanceM } ?: return
+        val m = Geo.distanceText(radius.toDouble())
+        val pilot = hit.target == DroneFence.Target.PILOT
+        val title = LanguageText.text(
+            if (pilot) "dronefence.alert.pilot" else "dronefence.alert.aircraft",
+            mapOf("m" to m),
+        )
+        val body = LanguageText.text(
+            "dronefence.alert.body",
+            mapOf("id" to hit.label, "d" to Geo.distanceText(hit.distanceM), "m" to m),
+        )
+        val say = if (settings.droneFenceVoice) {
+            LanguageText.text(
+                if (pilot) "dronefence.say.pilot" else "dronefence.say.aircraft",
+                mapOf("m" to m),
+            )
+        } else {
+            null
+        }
+        app.alerter.fenceAlert(
+            title = title,
+            body = body,
+            phrase = say,
+            beep = settings.droneFenceBeep,
+            shade = settings.droneFenceShade,
+        )
     }
 
     /** Lets a separated clock finish, or drop, between advertisements. */

@@ -1887,6 +1887,21 @@
     "speech.twoway": "vysielačky",
     "catalog.needs.app.title": "Najprv aktualizujte Fieldwatch",
     "catalog.needs.app.body": "Toto potrebuje novší Fieldwatch. Aktualizujte aplikáciu a skúste znova.",
-    "ui.catalog.request": "Žiadosť o katalóg na GitHub"
+    "ui.catalog.request": "Žiadosť o katalóg na GitHub",
+    "settings.topic.dronefence": "Geofence dronov",
+    "dronefence.on": "Alarm pri priblížení dronu",
+    "dronefence.note": "Používa polohu, ktorú dron vysiela v Remote ID. Drony bez Remote ID a väčšinu FPV dronov nevidí. Vyžaduje zapnutú polohu GPS.",
+    "dronefence.radius": "Polomer",
+    "dronefence.pilot": "Alarm aj pre pilota",
+    "dronefence.pilot.note": "Poloha pilota alebo miesta vzletu, ktorú dron vysiela. Pilot vo vašej blízkosti môže byť rovnako dôležitý ako dron.",
+    "dronefence.beep": "Pípnutie",
+    "dronefence.voice": "Hlas",
+    "dronefence.shade": "Upozornenie",
+    "dronefence.needs.gps": "Na použitie geofence zapnite polohu GPS.",
+    "dronefence.alert.aircraft": "Dron do {m}",
+    "dronefence.alert.pilot": "Pilot dronu do {m}",
+    "dronefence.alert.body": "{id} je {d} od vás. Polomer {m}.",
+    "dronefence.say.aircraft": "Dron do {m}",
+    "dronefence.say.pilot": "Pilot dronu do {m}"
   }
 }

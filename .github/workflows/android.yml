@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -64,12 +65,52 @@ jobs:
           yes | "$SM" --licenses >/dev/null || true
           "$SM" --install "platforms;android-35" "build-tools;35.0.0"
 
+      # Your own signing key from repository secrets. Same key every build, so a new
+      # APK installs over the old one and keeps its data. Without secrets: debug build.
+      - name: Signing key
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KEYSTORE_BASE64:-}" ]; then
+            echo "No KEYSTORE_BASE64 secret: building a debug APK (new random key each run, it will not update over an older install)."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          {
+            echo "FIELDWATCH_STORE_FILE=$RUNNER_TEMP/release.jks"
+            echo "FIELDWATCH_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "FIELDWATCH_KEY_ALIAS=$KEY_ALIAS"
+            echo "FIELDWATCH_KEY_PASSWORD=$KEY_PASSWORD"
+          } > local.properties
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Assemble signed release APK
+        if: steps.signing.outputs.signed == 'true'
+        run: |
+          ./gradlew assembleRelease --stacktrace
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk "out/antidron-${GITHUB_RUN_NUMBER}.apk"
+
       - name: Assemble debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        if: steps.signing.outputs.signed != 'true'
+        run: |
+          ./gradlew assembleDebug --stacktrace
+          mkdir -p out
+          cp app/build/outputs/apk/debug/app-debug.apk "out/antidron-${GITHUB_RUN_NUMBER}-debug.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: fieldwatch-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: antidron-apk
+          path: out/*.apk
           if-no-files-found: error
+
+      - name: Remove signing files
+        if: always()
+        run: rm -f local.properties "$RUNNER_TEMP/release.jks"

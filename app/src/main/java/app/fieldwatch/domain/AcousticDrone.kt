@@ -103,9 +103,19 @@ class AcousticDrone(val sampleRate: Int) {
             active = false
             return Verdict(false, 0.0, null, 0.0)
         }
-        val med = median(tonal.map { it.f0!! })
-        val steady = tonal.filter { abs(it.f0!! - med) <= med * F0_TOLERANCE }
+        // A two-blade prop shows its shaft rate and twice it (blade pass) at once, so the
+        // best ladder flips between f0 and 2·f0 from frame to frame. Frames whose f0 sits
+        // at 1×, 2× or 3× (or ½, ⅓) of the reference count as the same steady source.
+        val ref = reference(tonal.map { it.f0!! })
+        val steady = tonal.filter { related(it.f0!!, ref) }
+        val med = median(steady.map { it.f0!! }.ifEmpty { listOf(ref) })
         val share = steady.size.toDouble() / framesPerWindow
+        // Mains hum (fridge, transformer, lamp) sits exactly on k × 50 or 60 Hz and never
+        // wobbles. Rotors always wobble: ≥0.5 % in the field recordings, hum ≤0.1 %.
+        if (steady.size >= 8 && isMainsHum(steady.map { it.f0!! }, med)) {
+            active = false
+            return Verdict(false, 0.0, med, 0.0)
+        }
         active = if (active) share >= OFF_SHARE else share >= ON_SHARE
         val snr = if (steady.isEmpty()) 0.0 else steady.sumOf { it.snrDb } / steady.size
         return Verdict(active, share.coerceIn(0.0, 1.0), if (steady.isNotEmpty()) med else null, snr)
@@ -114,6 +124,36 @@ class AcousticDrone(val sampleRate: Int) {
     fun reset() {
         history.clear()
         active = false
+    }
+
+    /** The f0 that the most frames agree with, allowing octave and third-harmonic relations. */
+    private fun reference(f0s: List<Double>): Double =
+        f0s.maxByOrNull { c -> f0s.count { related(it, c) } * 1_000 + (1_000 - c / 10).toInt() } ?: f0s.first()
+
+    private fun isMainsHum(f0s: List<Double>, med: Double): Boolean {
+        val folded = f0s.map { fold(it, med) }
+        val m = median(folded)
+        val wobble = median(folded.map { abs(it - m) }) / m
+        if (wobble >= HUM_WOBBLE) return false
+        return listOf(50.0, 60.0).any { grid ->
+            val r = m % grid
+            min(r, grid - r) <= HUM_GRID_HZ
+        }
+    }
+
+    /** Moves [f] by octaves into [ref]/1.5 … [ref]×1.5, so f0 and 2·f0 compare. */
+    private fun fold(f: Double, ref: Double): Double {
+        var g = f
+        while (g > ref * 1.5) g /= 2.0
+        while (g < ref / 1.5) g *= 2.0
+        return g
+    }
+
+    private fun related(f: Double, ref: Double): Boolean {
+        val hi = max(f, ref)
+        val lo = min(f, ref)
+        for (n in 1..3) if (abs(hi - lo * n) <= lo * n * F0_TOLERANCE) return true
+        return false
     }
 
     private data class Peak(val hz: Double, val height: Double)
@@ -217,7 +257,7 @@ class AcousticDrone(val sampleRate: Int) {
         const val MIN_HZ = 60.0
         const val MAX_HZ = 4_500.0
         const val MIN_F0 = 80.0
-        const val MAX_F0 = 520.0
+        const val MAX_F0 = 600.0
         const val MAX_HARMONIC = 10
         const val MIN_HARMONICS = 4
         const val MIN_SNR_DB = 9.0
@@ -230,6 +270,9 @@ class AcousticDrone(val sampleRate: Int) {
         const val ON_SHARE = 0.6
         const val OFF_SHARE = 0.3
         const val DISPLAY_ROWS = 64
+        /** Below this relative wobble (median absolute deviation) a tone is a machine, not a rotor. */
+        const val HUM_WOBBLE = 0.0025
+        const val HUM_GRID_HZ = 1.5
 
         /** In-place iterative radix-2 FFT. Size must be a power of two. */
         fun fft(re: DoubleArray, im: DoubleArray) {

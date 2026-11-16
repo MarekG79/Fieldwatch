@@ -134,6 +134,43 @@ class AcousticDroneTest {
         assertEquals(0.0, run(x).first, 0.0)
     }
 
+    /** Fridge or transformer: 50 Hz grid with harmonics, perfectly steady. */
+    private fun mainsHum(base: Double): FloatArray {
+        val rnd = java.util.Random(4)
+        return FloatArray(10 * sr) { i ->
+            var s = 0.0
+            var h = 1
+            while (base * h < 2_000) {
+                s += 0.02 / h * sin(2 * PI * base * h * i / sr)
+                h++
+            }
+            (s + 0.003 * rnd.nextGaussian()).toFloat()
+        }
+    }
+
+    @Test
+    fun mainsHumIsQuiet() {
+        assertEquals(0.0, run(mainsHum(50.0)).first, 0.0)
+        assertEquals(0.0, run(mainsHum(100.0)).first, 0.0)
+    }
+
+    @Test
+    fun droneOnAFiftyHertzMultipleStillCounts() {
+        val (share, _) = run(drone(8.0, f0 = 300.0, level = 0.05, noise = 0.01, seed = 8))
+        assertTrue("share=$share", share > 0.9)
+    }
+
+    @Test
+    fun bladePassOctaveFlipsStayOneSource() {
+        // Shaft-rate ladder at 195 Hz under a stronger blade-pass ladder at 390 Hz, as in field recordings.
+        val x = drone(8.0, 195.0, 0.02, 0.01, seed = 12)
+        val y = drone(8.0, 390.0, 0.05, 0.0, seed = 13)
+        for (i in x.indices) x[i] += y[i]
+        val (share, last) = run(x)
+        assertTrue("share=$share", share > 0.9)
+        assertTrue(abs(last.f0!! - 195.0) < 15 || abs(last.f0!! - 390.0) < 25)
+    }
+
     @Test
     fun speechIsQuiet() {
         val (share, _) = run(speech(10.0))

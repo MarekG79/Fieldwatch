@@ -168,6 +168,8 @@ fun FieldwatchRoot(vm: FieldwatchViewModel, onRequestPermissions: () -> Unit) {
                 DisclaimerGate(onAccept = vm::acceptDisclaimer)
             } else if (!state.permissionsOk) {
                 PermissionGate(onRequestPermissions)
+            } else if (state.settings.simpleMode) {
+                app.fieldwatch.ui.screen.SimpleScreen(state, vm)
             } else {
                 FieldwatchShell(state, vm)
             }

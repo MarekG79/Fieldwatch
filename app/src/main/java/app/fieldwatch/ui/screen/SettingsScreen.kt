@@ -192,6 +192,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (topic == null) {
+                SimpleModeEntry(vm)
                 SettingsTopicList(
                     settings = settings,
                     catalogVersion = state.catalogVersion,

@@ -1578,6 +1578,8 @@ data class AppSettings(
     val droneFenceVoice: Boolean = true,
     /** System notification for a geofence alarm. On, so the alarm reaches a phone in a pocket. */
     val droneFenceShade: Boolean = true,
+    /** Antidron: open on the one-screen drone view. Technical mode is one tap away. */
+    val simpleMode: Boolean = true,
 )
 
 const val DISCLAIMER_REV = 3

@@ -81,7 +81,17 @@ jobs:
             echo "signed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          # Copying a long line can add breaks, spaces or quotes; keep base64 characters only.
+          CLEAN=$(printf '%s' "$KEYSTORE_BASE64" | tr -cd 'A-Za-z0-9+/=')
+          echo "KEYSTORE_BASE64: ${#CLEAN} base64 characters after cleanup (expected about 5736)."
+          if ! printf '%s' "$CLEAN" | base64 -d > "$RUNNER_TEMP/release.jks" 2>/dev/null; then
+            echo "::error::KEYSTORE_BASE64 is not valid base64. Paste the whole line again from github-secrets.txt."
+            exit 1
+          fi
+          if ! keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" >/dev/null 2>&1; then
+            echo "::error::Keystore does not open: the base64 line is cut short or KEYSTORE_PASSWORD is wrong."
+            exit 1
+          fi
           {
             echo "FIELDWATCH_STORE_FILE=$RUNNER_TEMP/release.jks"
             echo "FIELDWATCH_STORE_PASSWORD=$KEYSTORE_PASSWORD"

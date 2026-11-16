@@ -42,6 +42,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.automirrored.outlined.ShowChart
 import androidx.compose.material.icons.outlined.CellTower
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -587,7 +588,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     expandedHeight = 52.dp,
                     title = {
                         val screenW = LocalConfiguration.current.screenWidthDp.dp
-                        val actionW = if (route == "live") 56.dp else 16.dp
+                        val actionW = if (route == "live") 104.dp else 16.dp
                         Column(
                             modifier = Modifier
                                 .widthIn(max = (screenW - 20.dp - actionW).coerceAtLeast(120.dp))
@@ -683,6 +684,14 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     },
                     actions = {
                         if (route == "live") {
+                            // Antidron: back to the simple one-screen view.
+                            IconButton(onClick = { vm.updateSettings { it.copy(simpleMode = true) } }) {
+                                Icon(
+                                    Icons.Outlined.Shield,
+                                    LanguageText.text("simple.mode"),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
                             IconButton(
                                 onClick = {
                                     vm.setScanControlsExpanded(!state.settings.scanControlsExpanded)

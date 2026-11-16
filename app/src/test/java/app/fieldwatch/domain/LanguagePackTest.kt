@@ -535,8 +535,9 @@ class LanguagePackTest {
 
     @Test
     fun launcherNameStaysFieldwatch() {
+        // Antidron fork: own launcher name (Fieldwatch is the upstream trademark).
         val xml = repoFile("src/main/res/values/strings.xml").readText()
-        assertTrue(xml.contains(">Fieldwatch<"))
+        assertTrue(xml.contains(">Antidron<"))
     }
 
     @Test

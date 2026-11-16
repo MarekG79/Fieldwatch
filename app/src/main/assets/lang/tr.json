@@ -1887,6 +1887,21 @@
     "speech.twoway": "telsizler",
     "catalog.needs.app.title": "Önce Fieldwatch'u güncelleyin",
     "catalog.needs.app.body": "Bunun için daha yeni bir Fieldwatch gerekir. Uygulamayı güncelleyin, sonra yeniden deneyin.",
-    "ui.catalog.request": "GitHub katalog isteği"
+    "ui.catalog.request": "GitHub katalog isteği",
+    "settings.topic.dronefence": "Drone geofence",
+    "dronefence.on": "Alarm when a drone comes near",
+    "dronefence.note": "Uses the position a drone sends in Remote ID. Drones without Remote ID, and most FPV drones, are not seen. This needs GPS location on.",
+    "dronefence.radius": "Radius",
+    "dronefence.pilot": "Also alarm for the pilot",
+    "dronefence.pilot.note": "The pilot or takeoff position the drone sends. A pilot near you can matter as much as the drone.",
+    "dronefence.beep": "Beep",
+    "dronefence.voice": "Speak",
+    "dronefence.shade": "Notification",
+    "dronefence.needs.gps": "Turn on GPS location to use the geofence.",
+    "dronefence.alert.aircraft": "Drone within {m}",
+    "dronefence.alert.pilot": "Drone pilot within {m}",
+    "dronefence.alert.body": "{id} is {d} from you. Radius {m}.",
+    "dronefence.say.aircraft": "Drone within {m}",
+    "dronefence.say.pilot": "Drone pilot within {m}"
   }
 }

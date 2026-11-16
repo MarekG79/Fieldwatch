@@ -73,7 +73,6 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           set -euo pipefail
           if [ -z "${KEYSTORE_BASE64:-}" ]; then
@@ -92,12 +91,19 @@ jobs:
             echo "::error::Keystore does not open: the base64 line is cut short or KEYSTORE_PASSWORD is wrong."
             exit 1
           fi
+          # A PKCS12 store has one password for the store and the key, so the key uses
+          # KEYSTORE_PASSWORD. Pasted values can carry invisible characters: keep printable ASCII.
+          ALIAS=$(printf '%s' "$KEY_ALIAS" | tr -cd '[:graph:]')
           {
             echo "FIELDWATCH_STORE_FILE=$RUNNER_TEMP/release.jks"
             echo "FIELDWATCH_STORE_PASSWORD=$KEYSTORE_PASSWORD"
-            echo "FIELDWATCH_KEY_ALIAS=$KEY_ALIAS"
-            echo "FIELDWATCH_KEY_PASSWORD=$KEY_PASSWORD"
+            echo "FIELDWATCH_KEY_ALIAS=$ALIAS"
+            echo "FIELDWATCH_KEY_PASSWORD=$KEYSTORE_PASSWORD"
           } > local.properties
+          if ! keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$ALIAS" >/dev/null 2>&1; then
+            echo "::error::No key named '$ALIAS' in the keystore. KEY_ALIAS should be: antidron"
+            exit 1
+          fi
           echo "signed=true" >> "$GITHUB_OUTPUT"
 
       - name: Assemble signed release APK

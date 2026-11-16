@@ -23,6 +23,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import kotlin.math.sin
 import androidx.core.app.NotificationCompat
+import app.fieldwatch.AlarmActivity
 import app.fieldwatch.MainActivity
 import app.fieldwatch.R
 import app.fieldwatch.domain.AlertVoiceWhat
@@ -237,8 +238,21 @@ class Alerter(private val context: Context) {
      * Drone geofence. Own channel so it can be muted without muting the watchlist.
      * [body] has no coordinates. Vibrates every time: a drone overhead is worth a buzz.
      */
-    fun fenceAlert(title: String, body: String, phrase: String?, beep: Boolean, shade: Boolean) {
-        if (shade) {
+    fun fenceAlert(
+        title: String,
+        body: String,
+        phrase: String?,
+        beep: Boolean,
+        shade: Boolean,
+        fullScreen: Boolean = false,
+        sound: Boolean = false,
+    ) {
+        val alarm = if (fullScreen) AlarmActivity.intent(context, title, body, sound) else null
+        if (alarm != null && appInFront()) {
+            // In front: open the alarm now. A full-screen intent would only show as a banner.
+            runCatching { context.startActivity(alarm) }
+        }
+        if (shade || alarm != null) {
             ensureFenceChannel()
             val pending = PendingIntent.getActivity(
                 context,
@@ -258,6 +272,20 @@ class Alerter(private val context: Context) {
                 .setAutoCancel(true)
                 .setSilent(true)
                 .setContentIntent(pending)
+                .apply {
+                    if (alarm != null) {
+                        // Screen off or app in back: Android opens the alarm over the lock screen.
+                        setFullScreenIntent(
+                            PendingIntent.getActivity(
+                                context,
+                                FENCE_NOTE_ID + 1,
+                                alarm,
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                            ),
+                            true,
+                        )
+                    }
+                }
                 .build()
             manager.notify(FENCE_NOTE_ID, note)
         }
@@ -272,6 +300,16 @@ class Alerter(private val context: Context) {
     fun clearFenceNote() {
         manager.cancel(FENCE_NOTE_ID)
     }
+
+    private fun appInFront(): Boolean {
+        val info = android.app.ActivityManager.RunningAppProcessInfo()
+        android.app.ActivityManager.getMyMemoryState(info)
+        return info.importance <= android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+    }
+
+    /** Android 14+ lets the user withhold full-screen alarms; older versions always allow them. */
+    fun canFullScreen(): Boolean =
+        if (Build.VERSION.SDK_INT >= 34) manager.canUseFullScreenIntent() else true
 
     /**
      * Tracker monitoring. Low and silent. [text] has no coordinates and no owner claim.

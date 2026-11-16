@@ -1580,6 +1580,12 @@ data class AppSettings(
     val droneFenceShade: Boolean = true,
     /** Antidron: open on the one-screen drone view. Technical mode is one tap away. */
     val simpleMode: Boolean = true,
+    /** Antidron: receive Remote ID over Wi-Fi NAN on phones with Wi-Fi Aware. */
+    val nanRemoteId: Boolean = true,
+    /** Antidron: keep the microphone detector running with the screen off (needs scanning on). */
+    val acousticBackground: Boolean = false,
+    /** Antidron: geofence and sound alarms open a full-screen red alarm. */
+    val droneFenceFullScreen: Boolean = true,
 )
 
 const val DISCLAIMER_REV = 3

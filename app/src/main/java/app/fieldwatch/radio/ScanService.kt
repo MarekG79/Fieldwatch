@@ -62,6 +62,9 @@ class ScanService : LifecycleService() {
     private var lastNotifAt = 0L
     private val inbound = Channel<Observation>(512, BufferOverflow.DROP_OLDEST)
     private val fence = DroneFence()
+    private var micInForeground = false
+    private lateinit var nan: NanRadio
+    private var nanOn = false
     private val publishGate = Any()
     private var publishJob: Job? = null
     @Volatile private var lastPublishAt = 0L
@@ -81,6 +84,7 @@ class ScanService : LifecycleService() {
                 app.sits.noteFloods(app.wifiFlood.bursts())
             },
         )
+        nan = NanRadio(this, onObservation = { offer(it) })
         ble = BleRadio(
             this,
             onObservation = { offer(it) },
@@ -319,6 +323,7 @@ class ScanService : LifecycleService() {
                 }
                 considerTrackers(app, seen, tagged)
                 considerFence(app, seen)
+                syncNan(app)
                 if (settings.loggingEnabled) {
                     val toLog = seen.filter { it.hitCount <= 1 || it.hitCount % 25 == 0 }.take(16)
                     for (row in toLog) {
@@ -429,7 +434,16 @@ class ScanService : LifecycleService() {
             phrase = say,
             beep = settings.droneFenceBeep,
             shade = settings.droneFenceShade,
+            fullScreen = settings.droneFenceFullScreen,
         )
+    }
+
+    /** Antidron: Wi-Fi NAN Remote ID follows its switch while scanning runs. */
+    private fun syncNan(app: FieldwatchApp) {
+        val want = app.config.settings.nanRemoteId
+        if (want == nanOn) return
+        nanOn = want
+        if (want) nan.start() else nan.stop()
     }
 
     /** Lets a separated clock finish, or drop, between advertisements. */
@@ -608,6 +622,7 @@ class ScanService : LifecycleService() {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE,
             )
+            micInForeground = false
         } else if (Build.VERSION.SDK_INT >= 29) {
             startForeground(
                 NOTIF_ID,
@@ -617,6 +632,42 @@ class ScanService : LifecycleService() {
         } else {
             startForeground(NOTIF_ID, notification)
         }
+    }
+
+    /**
+     * Antidron: add or drop the microphone foreground type so the sound detector may keep
+     * listening with the screen off. Android 14 only allows adding it while the app is in
+     * front, so the simple screen asks for this, never the service on its own.
+     */
+    private fun applyMicForeground() {
+        val app = application as FieldwatchApp
+        val want = app.config.settings.acousticBackground && app.acoustic.wanted && app.acoustic.hasPermission()
+        if (Build.VERSION.SDK_INT < 30) {
+            // Android 10 does not cut the microphone in the background.
+            micInForeground = want
+            app.acoustic.setServiceMic(want)
+            return
+        }
+        val base = if (Build.VERSION.SDK_INT >= 34) {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        } else {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+        }
+        val notification = buildNotification(LanguageText.text("ui.fieldwatch.scanning"))
+        micInForeground = if (want) {
+            try {
+                startForeground(NOTIF_ID, notification, base or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+                true
+            } catch (e: Exception) {
+                Log.w(TAG, "microphone foreground refused", e)
+                runCatching { startForeground(NOTIF_ID, notification, base) }
+                false
+            }
+        } else {
+            runCatching { startForeground(NOTIF_ID, notification, base) }
+            false
+        }
+        app.acoustic.setServiceMic(micInForeground)
     }
 
     private fun updateNotification() {
@@ -660,6 +711,10 @@ class ScanService : LifecycleService() {
             stopScanning()
             return START_NOT_STICKY
         }
+        if (intent?.action == ACTION_MIC) {
+            applyMicForeground()
+            return START_NOT_STICKY
+        }
         return START_NOT_STICKY
     }
 
@@ -679,6 +734,9 @@ class ScanService : LifecycleService() {
         inbound.close()
         runCatching { wifi.stop() }
         runCatching { ble.stop() }
+        runCatching { if (::nan.isInitialized) nan.stop() }
+        runCatching { (application as FieldwatchApp).acoustic.setServiceMic(false) }
+        nanOn = false
         runCatching { (application as FieldwatchApp).tak.close() }
         val app = application as FieldwatchApp
         app.devices.setScanning(false)
@@ -719,6 +777,8 @@ class ScanService : LifecycleService() {
         private const val TAG = "FieldwatchScan"
         const val CHANNEL = "fieldwatch_scan"
         const val ACTION_STOP = "app.fieldwatch.STOP_SCAN"
+        /** Antidron: re-apply the microphone foreground type. */
+        const val ACTION_MIC = "app.fieldwatch.ANTIDRON_MIC"
         private const val NOTIF_ID = 42
         private const val PUBLISH_MS = 200L
         private const val BLE_START_STAGGER_MS = 500L

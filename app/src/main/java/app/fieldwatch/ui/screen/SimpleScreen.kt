@@ -119,8 +119,10 @@ internal fun SimpleScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
             )
             drones.forEach { DroneRow(it, radius, now) }
         }
-        AcousticCard()
+        AcousticCard(state, vm)
         ZoneCard(
+            vm = vm,
+            settings = settings,
             on = settings.droneFence,
             radius = radius,
             pilot = settings.droneFencePilot,
@@ -354,6 +356,8 @@ private fun DroneRow(drone: DroneWatch.Drone, radius: Int, now: Long) {
 
 @Composable
 private fun ZoneCard(
+    vm: FieldwatchViewModel,
+    settings: app.fieldwatch.domain.AppSettings,
     on: Boolean,
     radius: Int,
     pilot: Boolean,
@@ -380,6 +384,17 @@ private fun ZoneCard(
             Text(LanguageText.text("dronefence.pilot"), Modifier.weight(1f))
             FieldwatchSwitch(pilot, onPilot)
         }
+        FullScreenAlarmRow(vm, settings)
+        val nanState by app.fieldwatch.radio.NanRadio.state.collectAsStateWithLifecycle()
+        Text(
+            nanStatusLine(
+                nanState,
+                app.fieldwatch.radio.NanRadio.supported(LocalContext.current),
+                settings.nanRemoteId,
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

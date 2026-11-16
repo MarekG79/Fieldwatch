@@ -1953,6 +1953,26 @@
     "acoustic.alert": "Zvuk dronu v okolí",
     "acoustic.alert.body": "Bzučení vrtulí kolem {hz} Hz. Poloha není známa.",
     "simple.heard": "Pravděpodobně dron (zvuk)",
-    "simple.heard.note": "Bzučení vrtulí kolem {hz} Hz. Poloha není známa."
+    "simple.heard.note": "Bzučení vrtulí kolem {hz} Hz. Poloha není známa.",
+    "acoustic.background": "Poslouchat i při zhasnutém displeji",
+    "acoustic.background.note": "Poslouchá i při zhasnutém displeji, dokud běží skenování. Android ukazuje, že se mikrofon používá. Zavřením aplikace ze seznamu se zastaví.",
+    "acoustic.background.on": "Poslouchám i při zhasnutém displeji.",
+    "acoustic.background.needs.scan": "Poslouchání při zhasnutém displeji vyžaduje zapnuté skenování. Spusťte ho na této obrazovce.",
+    "alarm.dismiss": "Rozumím",
+    "alarm.open": "Otevřít aplikaci",
+    "dronefence.fullscreen": "Celoobrazovkový alarm",
+    "dronefence.fullscreen.note": "Červený alarm přes celou obrazovku, i přes zamčený displej.",
+    "dronefence.fullscreen.denied": "Android zatím této aplikaci nepovolil celoobrazovkové alarmy.",
+    "dronefence.fullscreen.allow": "Povolit",
+    "nan.title": "Remote ID přes Wi-Fi NAN",
+    "nan.note": "Některé drony vysílají Remote ID přes Wi-Fi Aware (NAN). Slyší ho jen telefony s podporou Wi-Fi Aware.",
+    "nan.status": "Wi-Fi NAN: {state}",
+    "nan.state.running": "poslouchá",
+    "nan.state.unsupported": "telefon nemá Wi-Fi Aware",
+    "nan.state.unavailable": "pozastaveno (Wi-Fi, hotspot nebo Direct)",
+    "nan.state.failed": "nepodařilo se spustit",
+    "nan.state.starting": "spouští se",
+    "nan.state.off": "vypnuto",
+    "nan.state.waiting": "spustí se se skenováním"
   }
 }

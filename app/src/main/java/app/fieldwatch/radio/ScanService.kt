@@ -1,5 +1,6 @@
 package app.fieldwatch.radio
 
+import app.fieldwatch.incident.IncidentSaver
 import app.fieldwatch.domain.LanguageText
 
 import android.app.Notification
@@ -436,7 +437,7 @@ class ScanService : LifecycleService() {
             shade = settings.droneFenceShade,
             fullScreen = settings.droneFenceFullScreen,
             deviceKey = hit.deviceKey,
-            alarmType = if (pilot) app.fieldwatch.incident.IncidentSaver.TYPE_PILOT else app.fieldwatch.incident.IncidentSaver.TYPE_AIRCRAFT,
+            alarmType = if (pilot) IncidentSaver.TYPE_PILOT else IncidentSaver.TYPE_AIRCRAFT,
         )
     }
 

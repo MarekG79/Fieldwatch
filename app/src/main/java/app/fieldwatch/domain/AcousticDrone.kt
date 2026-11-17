@@ -266,8 +266,9 @@ class AcousticDrone(val sampleRate: Int) {
         const val FLOOR_HALF = 6
         const val FLOOR_HALF_HZ = 120.0
         const val WINDOW_S = 3.0
-        const val F0_TOLERANCE = 0.10
-        const val ON_SHARE = 0.6
+        /** Tone match between frames. 10 % let gliding speech pass as one source (field test, AC + voices). */
+        const val F0_TOLERANCE = 0.06
+        const val ON_SHARE = 0.55
         const val OFF_SHARE = 0.3
         const val DISPLAY_ROWS = 64
         /** Below this relative wobble (median absolute deviation) a tone is a machine, not a rotor. */

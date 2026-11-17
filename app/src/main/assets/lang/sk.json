@@ -1973,6 +1973,24 @@
     "nan.state.failed": "nepodarilo sa spustiť",
     "nan.state.starting": "spúšťa sa",
     "nan.state.off": "vypnuté",
-    "nan.state.waiting": "spustí sa so skenovaním"
+    "nan.state.waiting": "spustí sa so skenovaním",
+    "incident.event": "Udalosť",
+    "incident.surroundings": "Okolie",
+    "incident.save": "Uložiť udalosť",
+    "incident.saving": "Ukladám…",
+    "incident.saved": "Uložené: {name}",
+    "incident.saved.detail": "Uložené: {name} · zariadenia: {n} · Stiahnuté/{folder}",
+    "incident.save.failed": "Nepodarilo sa uložiť.",
+    "incident.rename": "Premenovať",
+    "incident.surroundings.save": "Uložiť okolie…",
+    "incident.surroundings.note": "Uloží zariadenia v tomto filtri zachytené za posledných 10 minút ako PDF a JSON.",
+    "incident.window": "Posledných {n} minút · zariadenia: {count}",
+    "incident.phone": "Poloha telefónu: {pos}",
+    "incident.alarm": "Alarm",
+    "incident.tone": "Tón vrtúľ okolo {hz} Hz",
+    "incident.audio": "Nahrávka: Stiahnuté/Antidron/{name}",
+    "incident.radios": "Zariadenia",
+    "incident.drone.at": "Dron: {pos}",
+    "incident.pilot.at": "Pilot alebo vzlet: {pos}"
   }
 }

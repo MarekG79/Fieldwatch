@@ -42,7 +42,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.fieldwatch.domain.Incident
 import app.fieldwatch.domain.LanguageText
+import app.fieldwatch.incident.IncidentReceiver
+import app.fieldwatch.ui.screen.SaveEventBar
 import app.fieldwatch.ui.theme.FieldwatchTheme
 
 /**
@@ -67,12 +70,14 @@ class AlarmActivity : ComponentActivity() {
         val title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
         val body = intent.getStringExtra(EXTRA_BODY).orEmpty()
         val sound = intent.getBooleanExtra(EXTRA_SOUND, false)
+        val record = IncidentReceiver.alarmFrom(intent)
         setContent {
             FieldwatchTheme(darkTheme = true) {
                 AlarmScreen(
                     title = title,
                     body = body,
                     sound = sound,
+                    saveBar = { SaveEventBar(record) },
                     onDismiss = { dismiss() },
                     onOpen = {
                         startActivity(
@@ -112,8 +117,8 @@ class AlarmActivity : ComponentActivity() {
         const val EXTRA_BODY = "antidron.alarm.body"
         const val EXTRA_SOUND = "antidron.alarm.sound"
 
-        fun intent(context: Context, title: String, body: String, sound: Boolean): Intent =
-            Intent(context, AlarmActivity::class.java)
+        fun intent(context: Context, title: String, body: String, sound: Boolean, record: Incident.Alarm): Intent =
+            IncidentReceiver.putAlarm(Intent(context, AlarmActivity::class.java), record)
                 .putExtra(EXTRA_TITLE, title)
                 .putExtra(EXTRA_BODY, body)
                 .putExtra(EXTRA_SOUND, sound)
@@ -126,6 +131,7 @@ private fun AlarmScreen(
     title: String,
     body: String,
     sound: Boolean,
+    saveBar: @androidx.compose.runtime.Composable () -> Unit,
     onDismiss: () -> Unit,
     onOpen: () -> Unit,
 ) {
@@ -169,7 +175,9 @@ private fun AlarmScreen(
             lineHeight = 26.sp,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(36.dp))
+        saveBar()
+        Spacer(Modifier.height(12.dp))
         Button(
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth().height(64.dp),

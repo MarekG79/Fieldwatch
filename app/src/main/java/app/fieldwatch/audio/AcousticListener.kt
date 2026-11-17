@@ -236,6 +236,7 @@ class AcousticListener(private val app: FieldwatchApp) {
                 shade = settings.droneFenceShade,
                 fullScreen = settings.droneFenceFullScreen,
                 sound = true,
+                toneHz = v.f0,
             )
         }
     }

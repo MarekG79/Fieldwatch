@@ -64,6 +64,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Antidron: "Save event" button inside alarm notifications. -->
+        <receiver
+            android:name=".incident.IncidentReceiver"
+            android:exported="false" />
+
         <!-- Antidron: red full-screen alarm, also over the lock screen. -->
         <activity
             android:name=".AlarmActivity"

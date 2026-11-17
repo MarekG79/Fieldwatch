@@ -74,7 +74,8 @@ object Incident {
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     private val json = Json {
         prettyPrint = true
-        encodeDefaults = false
+        encodeDefaults = true
+        ignoreUnknownKeys = true
         explicitNulls = false
     }
 

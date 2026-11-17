@@ -24,6 +24,9 @@ import android.os.VibratorManager
 import kotlin.math.sin
 import androidx.core.app.NotificationCompat
 import app.fieldwatch.AlarmActivity
+import app.fieldwatch.domain.Incident
+import app.fieldwatch.incident.IncidentReceiver
+import app.fieldwatch.incident.IncidentSaver
 import app.fieldwatch.MainActivity
 import app.fieldwatch.R
 import app.fieldwatch.domain.AlertVoiceWhat
@@ -246,8 +249,12 @@ class Alerter(private val context: Context) {
         shade: Boolean,
         fullScreen: Boolean = false,
         sound: Boolean = false,
+        deviceKey: String? = null,
+        alarmType: String = if (sound) IncidentSaver.TYPE_SOUND else IncidentSaver.TYPE_AIRCRAFT,
+        toneHz: Double? = null,
     ) {
-        val alarm = if (fullScreen) AlarmActivity.intent(context, title, body, sound) else null
+        val record = Incident.Alarm(alarmType, title, body, deviceKey = deviceKey, toneHz = toneHz)
+        val alarm = if (fullScreen) AlarmActivity.intent(context, title, body, sound, record) else null
         if (alarm != null && appInFront()) {
             // In front: open the alarm now. A full-screen intent would only show as a banner.
             runCatching { context.startActivity(alarm) }
@@ -272,6 +279,11 @@ class Alerter(private val context: Context) {
                 .setAutoCancel(true)
                 .setSilent(true)
                 .setContentIntent(pending)
+                .addAction(
+                    0,
+                    LanguageText.text("incident.save"),
+                    IncidentReceiver.pending(context, record, FENCE_NOTE_ID + 2),
+                )
                 .apply {
                     if (alarm != null) {
                         // Screen off or app in back: Android opens the alarm over the lock screen.
@@ -299,6 +311,27 @@ class Alerter(private val context: Context) {
 
     fun clearFenceNote() {
         manager.cancel(FENCE_NOTE_ID)
+    }
+
+    /** Short notice after the Save event button in a notification. */
+    fun incidentSavedNote(name: String?) {
+        ensureFenceChannel()
+        val text = if (name != null) {
+            LanguageText.text("incident.saved", mapOf("name" to name))
+        } else {
+            LanguageText.text("incident.save.failed")
+        }
+        val note = NotificationCompat.Builder(context, FENCE_CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_fieldwatch)
+            .setContentTitle(LanguageText.text("incident.save"))
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSilent(true)
+            .setAutoCancel(true)
+            .setTimeoutAfter(30_000L)
+            .build()
+        manager.notify(FENCE_NOTE_ID + 3, note)
     }
 
     private fun appInFront(): Boolean {
@@ -484,6 +517,20 @@ class Alerter(private val context: Context) {
             .setAutoCancel(true)
             .setSilent(true)
             .setContentIntent(pending)
+            .addAction(
+                0,
+                LanguageText.text("incident.save"),
+                IncidentReceiver.pending(
+                    context,
+                    Incident.Alarm(
+                        IncidentSaver.TYPE_DEVICE,
+                        label,
+                        "${device.kind} ${device.mac} ${device.rssi} dBm",
+                        deviceKey = device.key,
+                    ),
+                    device.key.hashCode() xor 0x5A5A,
+                ),
+            )
             .build()
         manager.notify(device.key.hashCode() and 0x7FFFFFFF, note)
     }

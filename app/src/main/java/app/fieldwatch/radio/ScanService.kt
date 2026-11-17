@@ -435,6 +435,8 @@ class ScanService : LifecycleService() {
             beep = settings.droneFenceBeep,
             shade = settings.droneFenceShade,
             fullScreen = settings.droneFenceFullScreen,
+            deviceKey = hit.deviceKey,
+            alarmType = if (pilot) app.fieldwatch.incident.IncidentSaver.TYPE_PILOT else app.fieldwatch.incident.IncidentSaver.TYPE_AIRCRAFT,
         )
     }
 

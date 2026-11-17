@@ -1973,6 +1973,24 @@
     "nan.state.failed": "could not start",
     "nan.state.starting": "starting",
     "nan.state.off": "switched off",
-    "nan.state.waiting": "starts with scanning"
+    "nan.state.waiting": "starts with scanning",
+    "incident.event": "Event",
+    "incident.surroundings": "Surroundings",
+    "incident.save": "Save event",
+    "incident.saving": "Saving…",
+    "incident.saved": "Saved: {name}",
+    "incident.saved.detail": "Saved: {name} · {n} radios · Downloads/{folder}",
+    "incident.save.failed": "Could not save.",
+    "incident.rename": "Rename",
+    "incident.surroundings.save": "Save surroundings…",
+    "incident.surroundings.note": "Saves the radios in this filter heard in the last 10 minutes, as PDF and JSON.",
+    "incident.window": "Last {n} minutes · {count} radios",
+    "incident.phone": "Phone position: {pos}",
+    "incident.alarm": "Alarm",
+    "incident.tone": "Propeller tone about {hz} Hz",
+    "incident.audio": "Sound clip: Downloads/Antidron/{name}",
+    "incident.radios": "Radios",
+    "incident.drone.at": "Drone: {pos}",
+    "incident.pilot.at": "Pilot or takeoff: {pos}"
   }
 }

@@ -58,6 +58,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fieldwatch.domain.DroneFence
 import app.fieldwatch.domain.DroneWatch
 import app.fieldwatch.domain.Geo
+import app.fieldwatch.domain.Incident
+import app.fieldwatch.incident.IncidentSaver
 import app.fieldwatch.domain.LanguageText
 import app.fieldwatch.ui.FieldwatchUi
 import app.fieldwatch.ui.FieldwatchViewModel
@@ -111,6 +113,24 @@ internal fun SimpleScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
         Header(state.scanning, onStart = vm::startScan)
         if (!state.locationOn) LocationHint()
         StatusCard(level, drones.firstOrNull(), radius, heardHz)
+        // While an alarm lasts: one tap saves the last 5 minutes of radios (and sound).
+        val nearest = drones.firstOrNull()
+        val alarmNow = when {
+            level == DroneWatch.Level.ALERT && nearest != null -> Incident.Alarm(
+                type = if ((nearest.distanceM ?: Double.MAX_VALUE) <= radius) IncidentSaver.TYPE_AIRCRAFT else IncidentSaver.TYPE_PILOT,
+                title = LanguageText.text("simple.alert"),
+                body = nearest.label,
+                deviceKey = nearest.key,
+            )
+            heardHz != null -> Incident.Alarm(
+                type = IncidentSaver.TYPE_SOUND,
+                title = LanguageText.text("simple.heard"),
+                body = LanguageText.text("simple.heard.note", mapOf("hz" to heardHz.roundToInt().toString())),
+                toneHz = heardHz,
+            )
+            else -> null
+        }
+        if (alarmNow != null) SaveEventBar(alarmNow, onRed = false)
         if (drones.isNotEmpty()) {
             Text(
                 LanguageText.text("simple.drones"),

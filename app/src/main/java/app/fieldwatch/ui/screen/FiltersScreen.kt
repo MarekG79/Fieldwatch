@@ -153,6 +153,8 @@ fun FiltersScreen(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     }
                 }) { Text(LanguageText.text("ui.save.label")) }
             }
+            // Antidron: save the surroundings in this filter, last 10 minutes, with a name.
+            SaveSurroundingsRow(state.filtered)
             }
             SectionCard(LanguageText.text("ui.radios.label")) {
             Text(

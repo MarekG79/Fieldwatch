@@ -29,7 +29,9 @@ android {
         applicationId = "sk.antidron.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 54
+        // Antidron: CI passes the build number, so every Release is newer than the last and
+        // the in-app updater can offer it. Local builds keep the upstream code.
+        versionCode = System.getenv("ANTIDRON_BUILD")?.toIntOrNull()?.let { 100_000 + it } ?: 54
         versionName = "1.1.44"
         vectorDrawables.useSupportLibrary = true
     }

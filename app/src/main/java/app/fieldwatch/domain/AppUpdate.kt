@@ -102,9 +102,9 @@ object AppUpdateSkip {
 internal object AppUpdateLines {
     val all: List<EnglishLine> = listOf(
         en("update.allow.body", "Android asks once. Then come back and tap Update now again.", LanguageSlot.BODY),
-        en("update.allow.title", "Allow installs from Fieldwatch", LanguageSlot.CONTROL),
+        en("update.allow.title", "Allow installs from Antidron", LanguageSlot.CONTROL),
         en("update.checking", "Checking for an update", LanguageSlot.CONTROL),
-        en("update.current.body", "Fieldwatch {version} is the newest one on GitHub.", LanguageSlot.BODY),
+        en("update.current.body", "Antidron {version} is the newest one on GitHub.", LanguageSlot.BODY),
         en("update.current.title", "This phone is current", LanguageSlot.CONTROL),
         en("update.downloading", "Downloading the update", LanguageSlot.CONTROL),
         en("update.failed.body", "The file from GitHub could not be installed. The app on this phone is unchanged.", LanguageSlot.BODY),

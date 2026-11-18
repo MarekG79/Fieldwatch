@@ -48,6 +48,9 @@ jobs:
     # contents: write lets the job publish a GitHub Release with the APK.
     permissions:
       contents: write
+    env:
+      # versionCode = 100000 + build number (app/build.gradle.kts), so each Release is newer.
+      ANTIDRON_BUILD: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
 
@@ -147,7 +150,16 @@ jobs:
             echo "Zmeny od predchádzajúceho buildu:"
             git log -1 --pretty='- %s'
           } > notes.md
-          gh release create "$TAG" out/*.apk \
+          # The in-app updater reads releases/latest/download/app-update.json and Antidron.apk.
+          mkdir -p rel
+          cp "out/antidron-${GITHUB_RUN_NUMBER}.apk" rel/Antidron.apk
+          NAME=$(sed -n 's/^ *versionName = "\([0-9.]*\)".*/\1/p' app/build.gradle.kts | head -1)
+          SUBJECT=$(git log -1 --pretty='%s')
+          NOTES=$(printf 'Antidron %s\n\n%s\n\nNastavenia, hliadky aj uložené udalosti zostanú.' "$GITHUB_RUN_NUMBER" "$SUBJECT")
+          jq -n --argjson code "$((100000 + GITHUB_RUN_NUMBER))" --arg name "$NAME" --arg notes "$NOTES" \
+            '{versionCode: $code, versionName: $name, notes: $notes}' > rel/app-update.json
+          cat rel/app-update.json
+          gh release create "$TAG" out/*.apk rel/Antidron.apk rel/app-update.json \
             --target "$GITHUB_SHA" \
             --title "Antidron ${GITHUB_RUN_NUMBER}" \
             --notes-file notes.md \

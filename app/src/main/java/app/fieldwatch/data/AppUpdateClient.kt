@@ -6,12 +6,16 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.CancellationException
 
-/** The notes file and the APK on GitHub. No account. The notes file does not choose the address. */
+/**
+ * The notes file and the APK on GitHub. No account. The notes file does not choose the address.
+ * Antidron: both come from the newest Release of the fork, which CI publishes for every
+ * signed build of main. The install check still requires the same package and certificate.
+ */
 object AppUpdateClient {
     const val NOTE_URL =
-        "https://raw.githubusercontent.com/OffGridPete/Fieldwatch/main/dist/app-update.json"
+        "https://github.com/MarekG79/Fieldwatch/releases/latest/download/app-update.json"
     const val APK_URL =
-        "https://raw.githubusercontent.com/OffGridPete/Fieldwatch/main/dist/Fieldwatch.apk"
+        "https://github.com/MarekG79/Fieldwatch/releases/latest/download/Antidron.apk"
 
     fun fetchNote(
         url: String = NOTE_URL,
